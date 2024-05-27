@@ -137,7 +137,7 @@ async fn main() {
     let app = Router::new()
         .route("/login", post(authorize))
         .route("/protected", get(protected))
-        .layer(CorsLayer::permissive());
+        .layer(CorsLayer::very_permissive());
 
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
