@@ -2,9 +2,9 @@ use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
 use axum::response::Response;
+use axum::routing::{get, post};
 use axum::{async_trait, Json, RequestPartsExt};
 use axum::{response::IntoResponse, Router};
-use axum::routing::{get,post};
 use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::Authorization;
 use axum_extra::TypedHeader;
@@ -67,19 +67,20 @@ pub struct Claims {
 }
 
 #[async_trait]
-impl<S> FromRequestParts<S> for Claims where S: Send + Sync {
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
     type Rejection = AuthError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let TypedHeader(Authorization(bearer)) = parts
-            .extract::<TypedHeader<Authorization<Bearer>>>().await
+            .extract::<TypedHeader<Authorization<Bearer>>>()
+            .await
             .map_err(|_| AuthError::InvalidToken)?;
 
-        let token_data = decode::<Claims>(
-            bearer.token(),
-            &KEYS.decoding,
-            &Validation::default()
-        ).map_err(|_| AuthError::InvalidToken)?;
+        let token_data = decode::<Claims>(bearer.token(), &KEYS.decoding, &Validation::default())
+            .map_err(|_| AuthError::InvalidToken)?;
 
         Ok(token_data.claims)
     }
